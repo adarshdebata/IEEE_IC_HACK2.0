@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html>
+<head><script src="https://cdn.jsdelivr.net/npm/face-api.js"></script>
+
+    <title>Survey</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, #add8e6, #87ceeb);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+    
+        #quiz-container {
+            text-align: center;
+            background-color: #fff;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            width: 60%;
+            max-width: 500px;
+        }
+    
+        #question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+    
+        #rating {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px; 
+        }
+    
+        #rating input[type="radio"] {
+            margin: 0 10px;
+            transform: scale(1.2);
+        }
+    
+        #next-button {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px; 
+        }
+    
+        #next-button:hover {
+            background-color: #0056b3;
+        }
+    
+        #next-button:active {
+            background-color: #888888;
+        }
+    
+        #result {
+            display: none;
+            font-size: 28px;
+            margin-top: 20px;
+            color: #007bff;
+        }
+
+        #camera-container {
+            text-align: center;
+            margin-top: 20px;
+            width: 100%; 
+            max-width: 500px; 
+            border: 1px solid #ccc; 
+        }
+
+        video {
+            width: 100%; 
+        }
+
+        #emotion-result {
+            font-size: 20px;
+            margin-top: 10px;
+        }
+    </style>
+    
+    
+</head>
+<body>
+    <div id="quiz-container">
+        <div id="camera-container">
+            <button id="start-camera-button"></button>
+            <!-- <video id="camera-feed" autoplay playsinline></video> -->
+            <p id="emotion-result"> </p>
+        </div>
+        <h1>Disaster Quiz</h1>
+        <p id="question"></p>
+        <div id="rating">
+            <input type="radio" name="rating" value="1"> 1
+            <input type="radio" name="rating" value="2"> 2
+            <input type="radio" name="rating" value="3"> 3
+            <input type="radio" name="rating" value="4"> 4
+            <input type="radio" name="rating" value="5"> 5
+        </div>
+        <button id="next-button">Next</button>
+        <p id="result">Result : </p>
+        
+    </div>
+
+    <script>
+
+
+        const startCameraButton = document.getElementById("start-camera-button");
+        const cameraFeed = document.getElementById("camera-feed");
+        const emotionResult = document.getElementById("emotion-result");
+
+        // Function to start the camera
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraFeed.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+            }
+        }
+
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraFeed.srcObject = stream;
+
+                // Load the Face-API.js model
+                await faceapi.nets.tinyFaceDetector.loadFromUri('/models');
+                await faceapi.nets.faceLandmark68Net.loadFromUri('/models');
+                await faceapi.nets.faceRecognitionNet.loadFromUri('/models');
+                await faceapi.nets.faceExpressionNet.loadFromUri('/models');
+                
+            } catch (error) {
+                console.error("Error accessing camera:", error);
+            }
+        }
+
+        // Function to detect and display facial expression
+        async function detectFacialExpression() {
+            const video = document.getElementById("camera-feed");
+            const canvas = faceapi.createCanvasFromMedia(video);
+            document.body.append(canvas);
+            const displaySize = { width: video.width, height: video.height };
+            faceapi.matchDimensions(canvas, displaySize);
+
+            const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                .withFaceLandmarks()
+                .withFaceDescriptors()
+                .withFaceExpressions();
+
+            if (detections.length > 0) {
+                const expression = detections[0].expressions;
+                const maxExpression = Object.keys(expression).reduce((a, b) => expression[a] > expression[b] ? a : b);
+                emotionResult.textContent = `Emotion: ${maxExpression}`;
+            } else {
+                emotionResult.textContent = "No face detected.";
+            }
+        }
+
+        // Function to stop the camera
+        function stopCamera() {
+            const stream = cameraFeed.srcObject;
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach((track) => track.stop());
+                cameraFeed.srcObject = null;
+            }
+        }
+
+        startCameraButton.addEventListener("click", () => {
+            startCameraButton.disabled = true;
+            startCamera().then(() => {
+                detectFacialExpression();
+                setInterval(detectFacialExpression, 1000); // Update facial expression every second
+            });
+        });
+
+        // Add an event listener to stop the camera when the user leaves the page
+        window.addEventListener("beforeunload", stopCamera);
+
+
+        const questions = [
+            {
+                question: "Frequency of disaster?",
+                answer: 0,
+            },
+            {
+                question: "Rate your knowledge on disaster management?",
+                answer: 0,
+            },
+            {
+                question: "Rate society knowledge about disaster management ",
+                answer: 0,
+            },
+            {
+                question: "Frequency of flood in your area",
+                answer: 0,
+            },
+            {
+                question: "Frequency of earthquake/landslide in your area",
+                answer: 0,
+            },
+            {
+                question: "Frequency of thunderstrom in your area",
+                answer: 0,
+            },
+            {
+                question: "Frequency of accidents",
+                answer: 0,
+            },
+         
+            // {
+            //     question: "Please rate your use of coping mechanisms",
+            //     answer: 0,
+            // },
+            // {
+            //     question: "How would you rate the impact of specific stressors in your life",
+            //     answer: 0,
+            // },
+            
+        ];
+
+        let currentQuestion = 0;
+        const questionElement = document.getElementById("question");
+        const ratingElements = document.getElementsByName("rating");
+        const nextButton = document.getElementById("next-button");
+        const resultElement = document.getElementById("result");
+
+        function showQuestion() {
+            if (currentQuestion < questions.length) {
+                questionElement.textContent = questions[currentQuestion].question;
+                for (const rating of ratingElements) {
+                    rating.checked = false;
+                }
+                nextButton.disabled = true;
+            } else {
+                calculateScore();
+            }
+        }
+
+        function calculateScore() {
+    let totalRating = 0;
+    for (const q of questions) {
+        totalRating += q.answer;
+    }
+    const percentage = (totalRating / (questions.length * 5)) * 100;
+    //resultElement.textContent = `Your score: ${percentage.toFixed(2)}%`;
+
+    if (percentage > 96) {
+        resultElement.textContent += "\nTo Whom are you Lying?";
+
+        const link = document.createElement("a");
+        link.href = "https://sachidananda200.github.io/YouTube/";  
+        link.textContent = "Still You can Explore";
+        link.style.display = "block"; 
+        link.style.color = "#007bff"; 
+        link.style.textDecoration = "bold"; 
+        link.style.cursor = "pointer";
+        link.addEventListener("click", function (e) {
+            e.preventDefault(); 
+            window.location.href = link.href;
+        });
+
+        resultElement.appendChild(link);
+    }
+    
+    else if (percentage > 80) {
+        resultElement.textContent += "\nyou are doing great 👍";
+
+        
+        const link = document.createElement("a");
+        link.href = "https://sachidananda200.github.io/YouTube/";  
+        link.textContent = "Explore"; 
+        link.style.display = "block"; 
+        link.style.color = "#007bff"; 
+        link.style.textDecoration = "Bold"; 
+        link.style.cursor = "pointer"; 
+        link.addEventListener("click", function (e) {
+            e.preventDefault(); 
+            window.location.href = link.href;
+        });
+
+        resultElement.appendChild(link);
+    }
+
+    else if (percentage > 70) {
+        resultElement.textContent += "\nYou are better than Average 🙂";
+
+        const link = document.createElement("a");
+        link.href = "https://sachidananda200.github.io/YouTube/";  
+        link.textContent = "Explore"; 
+        link.style.display = "block"; 
+        link.style.color = "#007bff"; 
+        link.style.textDecoration = "bold"; 
+        link.style.cursor = "pointer"; 
+        link.addEventListener("click", function (e) {
+            e.preventDefault();
+            window.location.href = link.href;
+        });
+
+        resultElement.appendChild(link);
+    }
+    
+    else if (percentage > 50) {
+        resultElement.textContent += "\nYou Can Do Much Better";
+
+        const link = document.createElement("a");
+        link.href = "https://sachidananda200.github.io/YouTube/";  
+        link.textContent = "Let us help you out";
+        link.style.display = "block"; 
+        link.style.color = "#007bff";
+        link.style.textDecoration = "underline"; 
+        link.style.cursor = "pointer"; 
+        link.addEventListener("click", function (e) {
+            e.preventDefault(); 
+            window.location.href = link.href;
+        });
+
+        resultElement.appendChild(link);
+    }
+    else if(percentage >20){
+        resultElement.textContent += "\nSometime bad sometime good";
+
+        const link = document.createElement("a");
+        link.href = "https://pratyuktmohapatra.github.io/Specific-Questions/";  
+        link.textContent = "Let us help to know you more";
+        link.style.display = "block"; 
+        link.style.color = "#007bff";
+        link.style.textDecoration = "underline"; 
+        link.style.cursor = "pointer"; 
+        link.addEventListener("click", function (e) {
+            e.preventDefault(); 
+            window.location.href = link.href;
+        });
+
+        resultElement.appendChild(link);
+    }
+ 
+    else{
+        resultElement.textContent += "\nwhy not Cosider a Cosultant";
+
+        const link = document.createElement("a");
+        link.href = "https://pratyuktmohapatra.github.io/Know-you-better/";  
+        link.textContent = "Click Here";
+        link.style.display = "block"; 
+        link.style.color = "#007bff";
+        link.style.textDecoration = "underline"; 
+        link.style.cursor = "pointer"; 
+        link.addEventListener("click", function (e) {
+            e.preventDefault(); 
+            window.location.href = link.href;
+        });
+
+        resultElement.appendChild(link);
+    }
+ 
+
+    resultElement.style.display = "block";
+}
+
+
+        for (const rating of ratingElements) {
+            rating.addEventListener("change", function () {
+                questions[currentQuestion].answer = parseInt(this.value);
+                nextButton.disabled = false;
+            });
+        }
+
+        nextButton.addEventListener("click", function () {
+            currentQuestion++;
+            showQuestion();
+        });
+
+        showQuestion();
+    </script>
+</body>
+</html>

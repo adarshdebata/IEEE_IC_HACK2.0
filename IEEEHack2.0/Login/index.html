@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Login</h1>
+    
+    <form name="loginForm" action="login_process.php" method="post">
+    
+      <label for="username">User Name</label>
+      <input type="text" name="username" id="username" required>
+
+      <label for="password">Password</label>
+      <input type="password" name="password" id="password" required>
+
+      <input type="submit" value="Login">
+      
+      
+      <button class="signup-button" type="button" onhove="window.location.href='file:///D:\IEEEHack2.0\Registration\index.html'">Sign Up</button>
+
+
+    </form>
+    
+    <div class="or-divider">Or</div>
+      <div class="social-login">
+      <a href="#" class="google-login">Sign in with Google</a>
+      <a href="#" class="facebook-login">Sign in with Facebook</a>
+      <a href="#" class="microsoft-login">Sign in with Microsoft</a>
+      </div>
+  </div>
+</body>
+</html>

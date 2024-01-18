@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Question Tree</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #question-container {
+            text-align: center;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: #f8f8f8;
+            border-radius: 10px;
+            max-width: 400px;
+        }
+        h1 {
+            font-size: 36px; /* Increase the font size for the question */
+        }
+        p {
+            font-size: 24px; /* Increase the font size for the text */
+            margin: 20px 0;
+        }
+        button {
+            font-size: 20px; /* Increase the font size for the buttons */
+            padding: 14px 28px; /* Increase the button padding */
+            margin: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="question-container">
+        <h1></h1>
+        <p id="question-text"></p>
+        <button onclick="answerQuestion('yes')">Yes</button>
+        <button onclick="answerQuestion('no')">No</button>
+    </div>
+
+    <script>
+        // Define your question tree structure
+        const questionTree = {
+            question: "Are you feeling good today?",
+            yes: {
+                question: "Have you been feeling good lately?",
+                yes: {
+                    question: "Do you want to go for a walk?",
+                    yes: {
+                        question: "Enjoy your walk!"
+                    },
+                    no: {
+                        question: "Okay, maybe another time."
+                    }
+                },
+                no: {
+                    question: "Is it because of your mood?",
+                    yes: {
+                        question: "Maybe it will clear up later."
+                    },
+                    no: {
+                        question: "Stay indoors and stay cozy."
+                    }
+                }
+            },
+            no: {
+                question: "Is it because of your mood?",
+                yes: {
+                    question: "Are you feeling down because of financial problems?"
+                },
+                no: {
+                    question: "Is it because of a relationship?"
+                }
+            }
+        };
+
+        // Initialize variables
+        let currentNode = questionTree;
+        const questionText = document.getElementById("question-text");
+
+        // Function to load the current question
+        function loadQuestion() {
+            if (currentNode) {
+                questionText.textContent = currentNode.question;
+            } else {
+                questionText.textContent = "End of the question tree.";
+            }
+        }
+
+        // Function to handle user answers and progress through the tree
+        function answerQuestion(userAnswer) {
+            if (currentNode && currentNode[userAnswer]) {
+                currentNode = currentNode[userAnswer];
+                loadQuestion();
+            } else {
+                questionText.textContent = "Thank you for your respose";
+                currentNode = questionTree; // Reset to the root question
+            }
+        }
+
+        // Load the first question on page load
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
